@@ -4,14 +4,17 @@ install.packages("dplyr")
 install.packages("ggstatsplot")
 install.packages("tidyr")
 install.packages("ggplot2")
+install.packages("ggpubr")
 library(ggstatsplot)
 library(reshape2)
 
 library(ggplot2)
+library(ggplot)
 library(tidyverse)
 
 library(tidyr)
 library(dplyr)
+library(ggpubr)
 
 nba2122 = read.csv("C:\\Users\\rauna\\Downloads\\2021_2022_NBA_Player_Stats.csv")
 summary(nba2122)
@@ -28,10 +31,13 @@ nba2122_cleaned = dplyr::filter(nba2122, nba2122$GPlay > 13 & nba2122$MPlay > 15
 
 nba2122_cleaned
 
-plot(nba2122_cleaned$GStart,nba2122_cleaned$MPlay,xlab="Minutes Played",ylab="Games Played")
-abline(lm(nba2122$GPlay~nba2122$MPlay), col="red") # regression line (y~x)
+plot(nba2122_cleaned$MPlay,nba2122_cleaned$Age,main ="Relationship between Minutes Played and Age",xlab="Minutes Played",ylab="Age")
+abline(lm(nba2122$Age~nba2122$MPlay), col="red") # regression line (y~x
 
-
+r2agemplay = lm(nba2122$Age~nba2122$MPlay)
+summary(r2agemplay)
+?abline
+?lm()
 ## added an efficieny column
 
 nba2122_cleaned %>% mutate(Eff = NA)
@@ -46,13 +52,35 @@ nba2122_cleaned
 
 
 
+ggplot(data = nba2122_cleaned, aes(x = Eff, y = Age)) +
+  geom_point()+ geom_smooth(method = "lm") + ggtitle("Efficiency vs Age")+xlab("Efficiency")+ ylab("Age")+ geom_text(
+    label=rownames(nba2122_cleaned), 
+    nudge_x = 0.25, nudge_y = 0.25, 
+    check_overlap = T) + stat_regline_equation(label.y = 52, aes(label = ..eq.label..))+stat_regline_equation(label.y =47 , aes(label = ..rr.label..))
 
+nba2122_cleaned[2]
 
 ggplot(data = nba2122_cleaned, aes(x = Eff, y = GStart)) +
-  geom_point()+ geom_smooth(method = "lm")
+  geom_point()+ geom_smooth(method = "lm") + ggtitle("Efficiency vs Games Started")+xlab("Efficiency")+ ylab("Games Started") +
+  geom_text(
+    label=rownames(nba2122_cleaned), 
+    nudge_x = 0.25, nudge_y = 0.25, 
+    check_overlap = T)+
+  stat_regline_equation(label.y = 80, aes(label = ..eq.label..)) +stat_regline_equation(label.y =75 , aes(label = ..rr.label..))
+
+
+ggplot(data = nba2122_cleaned, aes(x = Eff, y = MPlay)) +
+  geom_point()+ geom_smooth(method = "lm") +  ggtitle("Efficiency vs Minutes Played")+xlab("Efficiency")+ ylab("Minutes Played")+
+  geom_text(
+    label=rownames(nba2122_cleaned), 
+    nudge_x = 0.25, nudge_y = 0.25, 
+    check_overlap = T)+
+  stat_regline_equation(label.y = 55, aes(label = ..eq.label..)) +stat_regline_equation(label.y =50 , aes(label = ..rr.label..))
+
+
 
 #removing rows with non numeric values 
-cormatprep = nba2122_cleaned[-c(1:3,5)]
+cormatprep = na.omit(nba2122_cleaned[-c(1:3,5)])
 cormatprep
 
 #created a correlation matrix
@@ -102,18 +130,20 @@ team_eff = nba2122_cleaned %>% group_by(Team) %>% summarise(total = sum(Eff))
 team_eff
 
 ggplot(data = team_eff,aes(x = total, y = Team))+
-  geom_point()
+  geom_point() +  ggtitle("Total Efficiency Per Team")+xlab("Total Team Efficiency")+ ylab("Team Name")
+  
 
 
 
-meaneff = sapply(team_eff[2],mean)
+meaneff = sapply(team_eff,mean)
 meaneff
+## 153.73 = mean Eff for all teams
 
 split_by_teams
 
 
 
-## get player efficiency for top 7 players with most minutes per team 
+## get player efficiency for top 8 players with most minutes per team 
 
 nba_sortedbymins =nba2122_cleaned %>% arrange(desc(nba2122_cleaned$MPlay)) 
 nba_sortedbymins
@@ -162,9 +192,6 @@ nba_trueStarterEff = nba_starter_eff[1:30]
 
 nba_trueStarterEff
 
-nba_splitbyteams[[31]][31][1,8]
-
-nba_starter_eff[1] = sum(listofteams[1])
 nba_starter_eff
 
 for (i in seq(from = 1, to = length(listofteams), by = 1)){
@@ -213,7 +240,8 @@ nba_startersF
 nba_EFFStarters = data.frame(row1,nba_starter_eff)
 nba_EFFStarters
 ggplot(data = nba_EFFStarters,aes(x = nba_starter_eff, y = row1))+
-  geom_point()
+  geom_point()+  ggtitle("Eight Player Per Team")+xlab("Eight Player Efficiecy")+ ylab("Team Name")
+
 
 ## Use a statistical test to see if deep subs could make a potential difference 
 ## team_eff = total efficiency for an NBA team including subs
@@ -234,8 +262,17 @@ stat_team_eff = rnorm(30,153.7,13.72)
 
 stat_nba_EFFStarters = rnorm(30,130.4,10.00)
 
+
+ggplot() + 
+  geom_density(data = stat_team_eff, aes(x = x), 
+               fill = "#E69F00", color = "black", alpha = 0.7) + 
+  geom_density(data = stat_nba_EFFStarters, aes(x = y),
+               fill = "#56B4E9", color = "black", alpha = 0.7)+ ggtitle("Density Plot of 8 Player Eff and All Players Eff")+xlab("Total Efficiecy")+ ylab("Density")
+
+
 plot(density(stat_team_eff), xlab = "Total Team Eff.",
      main = "Sample Distribution of Total Efficiency", col = "red")
+axis(2,cex.axis=2)
 lines(density(stat_nba_EFFStarters), col = "blue")
 legend("topright", c("Total Team Efficiency", "Starter Efficiency"), lwd = 1, col = c("red", "blue"))
 
