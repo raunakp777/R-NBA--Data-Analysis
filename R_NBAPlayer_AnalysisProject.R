@@ -24,8 +24,9 @@ nba2122[30]
 sapply(nba2122,sd)
 ##nba2122_cleaned contains data for players who have played atleast 10 games and average atleast 12 mins a game.
 
-nba2122_cleaned = filter(nba2122,nba2122$GPlay> 13 & nba2122$MPlay > 15)
+nba2122_cleaned = dplyr::filter(nba2122, nba2122$GPlay > 13 & nba2122$MPlay > 15)
 
+nba2122_cleaned
 
 plot(nba2122_cleaned$GStart,nba2122_cleaned$MPlay,xlab="Minutes Played",ylab="Games Played")
 abline(lm(nba2122$GPlay~nba2122$MPlay), col="red") # regression line (y~x)
@@ -38,8 +39,12 @@ nba2122_cleaned %>% mutate(Eff = NA)
 
 nba2122_cleaned$Eff = ((nba2122_cleaned$PTS + nba2122_cleaned$TRB + nba2122_cleaned$AST +nba2122_cleaned$STL - nba2122_cleaned$TOS + nba2122_cleaned$BLK - (nba2122_cleaned$FGA - nba2122_cleaned$FGM)- (nba2122_cleaned$FTA - nba2122_cleaned$FTM)))  
 
+nba2122_cleaned$Eff
+
 
 nba2122_cleaned
+
+
 
 
 
@@ -115,7 +120,7 @@ nba_sortedbymins
 
 
 nba_splitbyteams = split(nba_sortedbymins, f = nba_sortedbymins$Team, drop = FALSE)
-
+nba_splitbyteams
 nba_splitbyteams[[1]][31]
 
 listofteameff = list(
@@ -147,33 +152,75 @@ listofteameff = list(
     "SAC" = nba_splitbyteams[[26]][31],
     "SAS" = nba_splitbyteams[[27]][31],
     "TOR" = nba_splitbyteams[[28]][31],
-    "TOT" = nba_splitbyteams[[29]][31],
-    "UTA" = nba_splitbyteams[[30]][31],
-    "WAS" = nba_splitbyteams[[31]][31]
+    "UTA" = nba_splitbyteams[[29]][31],
+    "WAS" = nba_splitbyteams[[30]][31]
 )
 nba_starter_eff = rep(0,30)
 
-for(i in seq(from = 1, to = 31, by = 1)){nba_starter_eff[i]=sum(nba_splitbyteams[[i]][1:8,c(31)])}
-nba_trueStarterEff = nba_starter_eff[1:31]
+for(i in seq(from = 1, to = 30, by = 1)){nba_starter_eff[i]=sum(nba_splitbyteams[[i]][1:8,c(31)])}
+nba_trueStarterEff = nba_starter_eff[1:30]
 
-
-ggplot(data = nba_trueStarterEff,aes(x = total, y = Team))+
-  geom_point()
-
+nba_trueStarterEff
 
 nba_splitbyteams[[31]][31][1,8]
 
 nba_starter_eff[1] = sum(listofteams[1])
-nba_starter_eff[1]
+nba_starter_eff
 
 for (i in seq(from = 1, to = length(listofteams), by = 1)){
   nba_starter_eff[i] = sum (listofteams[i]$Eff[1:8])
-  }
+}
+row1
+row1= c("ATL",
+        "BOS",
+        "BRK",
+        "CHI",
+        "CHO",
+        "CLE",
+        "DAL",
+        "DEN",
+        "DET",
+        "GSW",
+        "HOU",
+        "IND",
+        "LAC",
+        "LAL",
+        "MEM",
+        "MIA",
+        "MIL",
+        "MIN",
+        "NOP",
+        "NYK",
+        "OKC",
+        "ORL",
+        "PHI",
+        "PHX",
+        "POR",
+        "SAC",
+        "SAS",
+        "TOR",
+        "UTA",
+        "WAS"
+)
+
 nba_starter_eff
-Atl_starting_eight_Eff = sum(nba_splitbyteams[2]$Eff[1:8])
+nba_starters = matrix(data = row1,nrow= 30,ncol = 1)
+nba_starters
 
-Atl_starting_eight_Eff
+nba_startersF = rbind(row1,nba_starter_eff)
+nba_startersF
 
-class(nba2122_cleaned$MPlay)
-?arrange()
+nba_EFFStarters = data.frame(row1,nba_starter_eff)
+nba_EFFStarters
+ggplot(data = nba_EFFStarters,aes(x = nba_starter_eff, y = row1))+
+  geom_point()
+
+## Use a statistical test to see if deep subs could make a potential difference 
+## team_eff = total efficiency for an NBA team including subs
+## nba_EFFStarters = total efficiency for an NBA team with starters and 3 subs with most minutes
+
+summary(team_eff)
+summary(nba_EFFStarters)
+sapply(team_eff,sd)
+sapply(nba_EFFStarters,sd)
 
