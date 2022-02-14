@@ -219,8 +219,35 @@ ggplot(data = nba_EFFStarters,aes(x = nba_starter_eff, y = row1))+
 ## team_eff = total efficiency for an NBA team including subs
 ## nba_EFFStarters = total efficiency for an NBA team with starters and 3 subs with most minutes
 
+## Null Hypothesis: u(team_eff) = u(nba_EFFStarters)
+## Alternate Hypothesis : u(team_eff)!= u(nba_EFFStarters)
+
+
 summary(team_eff)
 summary(nba_EFFStarters)
 sapply(team_eff,sd)
 sapply(nba_EFFStarters,sd)
 
+
+set.seed(15)
+stat_team_eff = rnorm(30,153.7,13.72)
+
+stat_nba_EFFStarters = rnorm(30,130.4,10.00)
+
+plot(density(stat_team_eff), xlab = "Total Team Eff.",
+     main = "Sample Distribution of Total Efficiency", col = "red")
+lines(density(stat_nba_EFFStarters), col = "blue")
+legend("topright", c("Total Team Efficiency", "Starter Efficiency"), lwd = 1, col = c("red", "blue"))
+
+boxplot(stat_team_eff, stat_nba_EFFStarters, main = "Sample Distribution of Total Efficiency",
+        col = c("red", "blue"), names = c("Total Team Efficiency", "Starter Efficiency"))
+
+t.stat = (mean(stat_team_eff) - mean(stat_nba_EFFStarters))/sqrt(var(stat_team_eff))/100
+t.stat                                                                 
+
+t.test(stat_team_eff, stat_nba_EFFStarters, alternative = "two.sided")
+
+f.stat = var(stat_team_eff)/var(stat_nba_EFFStarters) #Manually calculating the F-statistic.
+f.stat
+
+var.test(stat_team_eff, stat_nba_EFFStarters, alternative = "two.sided")
